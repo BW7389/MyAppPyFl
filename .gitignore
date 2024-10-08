@@ -1,0 +1,55 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Environment variables and configuration
+.env
+
+# Python virtual environment
+env/
+venv/
+ENV/
+.venv/
+# If you are using Pipenv
+Pipfile.lock
+
+# Flask instance folder
+instance/
+
+# SQLAlchemy database files
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+coverage.xml
+*.cover
+*.coverage
+*.lcov
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+
+# Ignore compiled C extensions
+*.so
+
+# Ignore build directories
+build/
+dist/
+*.egg-info/
+
+# Ignore MacOS files
+.DS_Store
+
+# Ignore Python egg files
+.eggs/
