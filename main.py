@@ -1,27 +1,42 @@
 from flask import Flask
-from extensions import db, migrate  # Import db and migrate from extensions
-from shellContext import make_shell_context  # Import the function to create shell context
+from config import Config
+from services.database_service import DatabaseService
+from services.jwt_service import JWTService
+from services.blueprint_service import BlueprintService
+from shell_context import make_shell_context 
+
+# Import extensions
+from extensions import db, migrate, jwt
+
+# Import blueprints
+from controllers.auth import auth_bp
+from controllers.users import user_bp
 
 def create_app():
-    # Create an instance of the Flask application
+    """Application factory function to create the Flask app."""
+    
     app = Flask(__name__)
 
-    # Load configuration from environment variables with a prefix
-    app.config.from_prefixed_env()
+    # Load configuration
+    Config.init_app(app)
 
-    # Initialize the database (db) with the Flask application
-    db.init_app(app)
+    # Initialize services
+    database_service = DatabaseService(db, migrate)
+    jwt_service = JWTService(jwt)
+    blueprint_service = BlueprintService([
+        (auth_bp, '/auth'),
+        (user_bp, '/users')
+    ])
 
-    # Initialize Flask-Migrate with the application and database
-    migrate.init_app(app, db)
+    # Initialize services with the app
+    database_service.init_app(app)
+    jwt_service.init_app(app)
+    blueprint_service.register_blueprints(app)
 
-    # Create an application context to use the db
-    with app.app_context():
-        # Create all tables in the database if they do not exist
-        db.create_all()
+    # Create all tables in the database
+    database_service.create_all_tables(app)
 
-    # Register shell context processor for easy access to db and User in the shell
+    # Provide shell context for Flask CLI
     app.shell_context_processor(make_shell_context)
 
-    # Return the instance of the Flask application
     return app
