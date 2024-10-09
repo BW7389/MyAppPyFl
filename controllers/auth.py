@@ -58,8 +58,8 @@ def logout():
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
-    jti = jwt_payload['jti']  # Get the token's jti
-    return jti in revoked_tokens  # Return True if the token is revoked
+    jti = jwt_payload['jti']  
+    return jti in revoked_tokens 
 
 def revoke_token(jti):
     revoked_tokens.add(jti) 
