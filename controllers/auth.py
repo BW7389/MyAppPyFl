@@ -1,9 +1,11 @@
 from flask import Blueprint
 from flask import jsonify, request
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt
 from models import User
+from extensions import jwt
 
 auth_bp = Blueprint('auth', __name__)
+revoked_tokens = set()
 
 @auth_bp.post('/register')
 def register_user():
@@ -45,8 +47,31 @@ def login_user():
                         }, 200)
     return jsonify({'error': 'Invalid username or password'}, 400)
 
+@auth_bp.post('/logout')
+@jwt_required()
+def logout():
+    jti = get_jwt()['jti']  
+    revoked_tokens.add(jti) 
+    return jsonify(msg="Access token has been revoked"), 200
+
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload['jti']  # Get the token's jti
+    return jti in revoked_tokens  # Return True if the token is revoked
+
+def revoke_token(jti):
+    revoked_tokens.add(jti) 
+
 
 @auth_bp.get('/whoami')
 @jwt_required()
 def whoami():
-    return jsonify({'message': 'message '}), 200
+    try:
+        claims = get_jwt()
+        return jsonify({'message': 'Here are your claims', 'claims': claims}), 200
+    except ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 401

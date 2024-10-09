@@ -74,8 +74,26 @@ components:
       items:
         $ref: '#/components/schemas/User'
 
+    BackupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Backup created successfully."
+        error:
+          type: string
+          example: "An error occurred while creating the backup."
+
 security:
   - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Operations related to user authentication and registration.
+  - name: Users
+    description: Operations for managing users.
+  - name: BackupDB
+    description: Operations for database backup management.
 
 paths:
   /auth/register:
@@ -150,6 +168,89 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /auth/logout:
+    post:
+      summary: User logout
+      description: Invalidates the user's JWT token, effectively logging them out.
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []  # This endpoint requires JWT authentication
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User logged out successfully."
+        '401':
+          description: Unauthorized (invalid or missing token)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing or invalid JWT token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "An unexpected error occurred"
+
+  /auth/whoami:
+    get:
+      summary: Get the current user's claims
+      description: Retrieves the claims of the currently authenticated user.
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []  # This endpoint requires JWT authentication
+      responses:
+        '200':
+          description: Successfully retrieved user claims
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Here are your claims"
+                  claims:
+                    type: object
+                    additionalProperties: true  # Dynamic structure for claims
+        '401':
+          description: Unauthorized (invalid or missing token)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing or invalid JWT token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "An unexpected error occurred"
+                    
   /users/all:
     get:
       summary: Get list of users
@@ -177,3 +278,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /backup:
+    post:
+      summary: Backup the database
+      description: Creates a backup of the entire database and saves it as a SQL file.
+      tags:
+        - BackupDB
+      responses:
+        '200':
+          description: Backup created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupResponse'
+        '500':
+          description: Error creating backup
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupResponse'

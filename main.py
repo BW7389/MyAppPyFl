@@ -6,6 +6,7 @@ from services.blueprint_service import BlueprintService
 from shell_context import make_shell_context 
 import mysql.connector
 from mysql.connector import Error
+import os
 
 # Import extensions
 from extensions import db, migrate, jwt
@@ -74,5 +75,15 @@ def create_app():
         finally:
             if 'connection' in locals() and connection.is_connected():
                 connection.close()
-                
+    
+    @app.route('/backup', methods=['POST'])
+    def backup_db():
+        try:
+            backup_file = 'backup.sql'
+            command = f"docker exec mysql_db /usr/bin/mysqldump -u root -pletmein --all-databases > {backup_file}"
+            os.system(command)
+            return jsonify({"message": "Backup created successfully."}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     return app
