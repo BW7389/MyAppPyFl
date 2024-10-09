@@ -9,3 +9,7 @@
 ###    2. pip install python-dotenv
 
 ###    export FLASK_APP=main.py
+
+pip install -r requirements.txt
+
+
